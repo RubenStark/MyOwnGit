@@ -17,8 +17,6 @@ func main() {
 		Args: os.Args[2:],
 	}
 
-	fmt.Printf("Command: %s\n", command)
-
 	handler, ok := h.Handlers[command.Name]
 
 	if !ok {
@@ -27,6 +25,6 @@ func main() {
 	}
 
 	output := handler(os.Args[1:])
-	fmt.Fprintf(os.Stderr, "Output: %s\n", output)
+	fmt.Fprintf(os.Stderr, output)
 
 }
