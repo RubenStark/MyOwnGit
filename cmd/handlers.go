@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"io"
 	"os"
+
+	handlers "github.com/codecrafters-io/git-starter-go/handlers"
 )
 
 type Handler func([]string) string
@@ -15,7 +17,7 @@ var Handlers map[string]Handler = map[string]Handler{
 	"init":        initHandler,
 	"cat-file":    catFile,
 	"hash-object": hashObject,
-	"ls-tree":     lsTree,
+	"ls-tree":     handlers.LsTree,
 }
 
 func initHandler(args []string) string {
@@ -115,39 +117,4 @@ func hashObject(args []string) string {
 	}
 
 	return hashString
-}
-
-func lsTree(args []string) string {
-	if len(args) != 3 {
-		fmt.Fprintf(os.Stderr, "usage: mygit ls-tree --name-only <hash>\n")
-		os.Exit(1)
-	}
-
-	hash := args[2]
-
-	// Read the object file
-	objectPath := fmt.Sprintf(".git/objects/%s/%s", hash[:2], hash[2:])
-	objectData, err := os.ReadFile(objectPath)
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error reading object file: %s\n", err)
-		return fmt.Sprintf("Error reading object file: %s", err)
-	}
-
-	// Decompress the object data
-	r, err := zlib.NewReader(bytes.NewReader(objectData))
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "Error creating zlib reader: %s\n", err)
-		return fmt.Sprintf("Error creating zlib reader: %s", err)
-	}
-	defer r.Close()
-
-	var buf bytes.Buffer
-	if _, err := io.Copy(&buf, r); err != nil {
-		fmt.Fprintf(os.Stderr, "Error decompressing object data: %s\n", err)
-		return fmt.Sprintf("Error decompressing object data: %s", err)
-	}
-
-	finalString := buf.String() // blob 12hello world -> hello world
-
-	return finalString[7:]
 }
